@@ -20,8 +20,9 @@ sysinfo = platform.system()
 
 def notify(title, message):
     if sysinfo == 'Linux':
-        notify2.init('douyu')
-        notify2.Notification(title, message).show()
+        os.system('notify-send {}'.format(': '.join([title, message])))
+#        notify2.init('douyu')
+#        notify2.Notification(title, message).show()
     else:
         t = '-title {!r}'.format(title)
         m = '-message {!r}'.format(message)
@@ -296,5 +297,5 @@ def main(url='http://www.douyutv.com/xtd'):
     get_danmu(**login_room_info)
 
 if __name__=='__main__':
-    url= sys.argv[1] if len(sys.argv)>1 else 'http://www.douyutv.com/xtd'
+    url= sys.argv[1] if len(sys.argv)>1 else 'http://www.douyutv.com/zeek'
     main(url)
