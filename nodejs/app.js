@@ -8,22 +8,23 @@ var s = net.connect({
   console.log('connect success');
 });
 
-var msg = 'type@=loginreq/roomid@=229457/';
+var msg = 'type@=loginreq/roomid@=518340/';
 sendData(s, msg);
 
 s.on('data', function(chunk) {
   formatData(chunk);
-  var msg = 'type@=joingroup/rid@=229457/gid@=-9999/';
+  var msg = 'type@=joingroup/rid@=518340/gid@=-9999/';
   sendData(s, msg);
 });
 
 setInterval(function() {
-  var msg = 'type@=keeplive/tick@=1439802131/';
+  var timestamp = parseInt(new Date()/1000);
+  var msg = 'type@=keeplive/tick@=' + timestamp + '/';
   sendData(s, msg);
 }, 45000);
 
 function sendData(s, msg) {
-  var data = new Buffer(4 + 4 + 4 + msg.length + 1);
+  var data = new Buffer(msg.length + 13);
   data.writeInt32LE(msg.length + 9, 0);
   data.writeInt32LE(msg.length + 9, 4);
   data.writeInt32LE(689, 8);
