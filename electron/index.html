@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>707弹幕助手</title>
+        <style>
+        div {
+          overflow: auto;
+          height: 500px;
+        }
+        </style>
+    </head>
+    <body>
+        <script>
+        /*
+         * 弹幕程序
+         */
+        var http = require('http');
+        var net = require('net');
+        var roomid = '58428';
+        var s = net.connect({
+          port:8601,
+          host:'openbarrage.douyutv.com'
+        }, function() {
+          console.log('connect success');
+        });
+
+        var msg = 'type@=loginreq/roomid@=' + roomid + '/';
+        sendData(s, msg);
+
+        s.on('data', function(chunk) {
+          formatData(chunk);
+          var msg = 'type@=joingroup/rid@=' + roomid + '/gid@=-9999/';
+          sendData(s, msg);
+        });
+
+        setInterval(function() {
+          var timestamp = parseInt(new Date()/1000);
+          var msg = 'type@=keeplive/tick@=' + timestamp + '/';
+          sendData(s, msg);
+        }, 45000);
+
+        function sendData(s, msg) {
+          var data = new Buffer(msg.length + 13);
+          data.writeInt32LE(msg.length + 9, 0);
+          data.writeInt32LE(msg.length + 9, 4);
+          data.writeInt32LE(689, 8);
+          data.write(msg + '\0', 12);
+          s.write(data);
+        }
+
+        function formatData(msg) {
+          var sliced = msg.slice(12).toString();
+          var splited = sliced.substring(0, sliced.length - 2).split('/');
+          var map = formatDanmu(splited);
+          analyseDanmu(map);
+        }
+
+        function formatDanmu(msg) {
+          var map = {};
+          for (var i in msg) {
+            var splited = msg[i].split('@=');
+            map[splited[0]] = splited[1];
+          }
+          return map;
+        }
+
+        function analyseDanmu(msg) {
+          if (msg['type'] == 'chatmsg') {
+            var m = msg['nn'] + ':' + msg['txt'];
+            updateMsg(m);
+          }
+        }
+
+        function updateMsg(msg) {
+          var content = document.getElementById('messages');
+          content.innerHTML += msg + '<br/>';
+          content.scrollTop = content.scrollHeight;
+        }
+        </script>
+        <div id="messages"></div>
+    </body>
+</html>
