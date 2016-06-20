@@ -5,8 +5,7 @@
         <title>707弹幕助手</title>
         <style>
         div {
-          overflow: auto;
-          height: 500px;
+          overflow-y: auto;
         }
         </style>
     </head>
@@ -17,29 +16,36 @@
          */
         var http = require('http');
         var net = require('net');
-        var roomid = '58428';
-        var s = net.connect({
-          port:8601,
-          host:'openbarrage.douyutv.com'
-        }, function() {
-          console.log('connect success');
-        });
 
-        var msg = 'type@=loginreq/roomid@=' + roomid + '/';
-        sendData(s, msg);
+        function start(roomid) {
+          // 建立socket连接
+          var s = net.connect({
+            port:8601,
+            host:'openbarrage.douyutv.com'
+          }, function() {
+            console.log('connect success');
+          });
 
-        s.on('data', function(chunk) {
-          formatData(chunk);
-          var msg = 'type@=joingroup/rid@=' + roomid + '/gid@=-9999/';
+          var msg = 'type@=loginreq/roomid@=' + roomid + '/';
           sendData(s, msg);
-        });
 
-        setInterval(function() {
-          var timestamp = parseInt(new Date()/1000);
-          var msg = 'type@=keeplive/tick@=' + timestamp + '/';
-          sendData(s, msg);
-        }, 45000);
+          // 接收数据
+          s.on('data', function(chunk) {
+            formatData(chunk);
+            var msg = 'type@=joingroup/rid@=' + roomid + '/gid@=-9999/';
+            sendData(s, msg);
+          });
 
+          // 设置心跳
+          setInterval(function() {
+            var timestamp = parseInt(new Date()/1000);
+            var msg = 'type@=keeplive/tick@=' + timestamp + '/';
+            sendData(s, msg);
+          }, 45000);
+
+        }
+
+        // 给弹幕服务器发送消息
         function sendData(s, msg) {
           var data = new Buffer(msg.length + 13);
           data.writeInt32LE(msg.length + 9, 0);
@@ -49,6 +55,7 @@
           s.write(data);
         }
 
+        // 格式化数据
         function formatData(msg) {
           var sliced = msg.slice(12).toString();
           var splited = sliced.substring(0, sliced.length - 2).split('/');
@@ -56,6 +63,7 @@
           analyseDanmu(map);
         }
 
+        // 格式化收到的弹幕，存入map
         function formatDanmu(msg) {
           var map = {};
           for (var i in msg) {
@@ -65,6 +73,7 @@
           return map;
         }
 
+        // 识别弹幕信息
         function analyseDanmu(msg) {
           if (msg['type'] == 'chatmsg') {
             var m = msg['nn'] + ':' + msg['txt'];
@@ -72,12 +81,25 @@
           }
         }
 
+        // 更新页面数据
         function updateMsg(msg) {
           var content = document.getElementById('messages');
           content.innerHTML += msg + '<br/>';
-          content.scrollTop = content.scrollHeight;
+          // 滚动条始终在最下面
+          window.scrollTo(0,content.scrollHeight);
+        }
+
+        // 设置房间号
+        function setRoomId() {
+          var roomid = document.getElementById('roomid').value;
+          var content = document.getElementById('messages');
+          content.innerHTML = "";
+          start(roomid);
         }
         </script>
-        <div id="messages"></div>
+        <div id="messages">
+          <input type="text" id="roomid"/>
+          <button onclick="setRoomId()" id="roomIdButton">连接</button>
+        </div>
     </body>
 </html>
