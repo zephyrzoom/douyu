@@ -6,7 +6,12 @@ const {ipcMain} = electron;
 let mainWindow;
 
 function createWindow() {
-    mainWindow = new BrowserWindow({width:400, height:200, autoHideMenuBar:true});
+    mainWindow = new BrowserWindow({
+        width: 400,
+        height: 200,
+        autoHideMenuBar: true,
+        icon: __dirname + '/../assets/favicon.ico'
+    });
     mainWindow.loadURL(`file://${__dirname}/index.html`);
     mainWindow.on('closed', () => {
         mainWindow = null;
