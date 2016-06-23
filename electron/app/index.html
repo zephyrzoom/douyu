@@ -3,11 +3,12 @@
     <head>
         <meta charset="UTF-8">
         <title>707弹幕助手</title>
-        <style>
-        div {
-          overflow-y: auto;
-        }
-        </style>
+        <link rel="stylesheet" href="../css/index.css">
+        <!-- Stylesheets -->
+        <link rel="stylesheet" href="../css/photon.min.css">
+        <!-- Jquery -->
+        <script>window.$ = window.jQuery = require('../js/jquery.js')</script>
+
     </head>
     <body>
         <script>
@@ -76,30 +77,57 @@
         // 识别弹幕信息
         function analyseDanmu(msg) {
           if (msg['type'] == 'chatmsg') {
-            var m = msg['nn'] + ':' + msg['txt'];
-            updateMsg(m);
+            updateMsg(msg['nn'], msg['txt']);
           }
         }
 
         // 更新页面数据
-        function updateMsg(msg) {
+        function updateMsg(nn, txt) {
           var content = document.getElementById('messages');
-          content.innerHTML += msg + '<br/>';
+          content.innerHTML += '<tr><td><span class="uname">' + nn + '</span>:' + txt + '</td></tr>';
           // 滚动条始终在最下面
-          window.scrollTo(0,content.scrollHeight);
+          var pane = document.getElementById('pane');
+          pane.scrollTop = pane.scrollHeight;
         }
 
         // 设置房间号
         function setRoomId() {
           var roomid = document.getElementById('roomid').value;
-          var content = document.getElementById('messages');
-          content.innerHTML = "";
+          var content = document.getElementById('pane');
+          content.innerHTML = "<table class='table-striped'><tbody id='messages'></tbody></table>";
           start(roomid);
+
+          const {ipcRenderer} = require('electron');
+          ipcRenderer.send('asynchronous-message', 'ping');
         }
+
+        $(document).ready(function () {
+          const {shell} = require('electron');
+          const githubLink = document.getElementById('github');
+          githubLink.addEventListener('click', function (event) {
+            shell.openExternal('http://github.com/zephyrzoom');
+          });
+        });
+
+
         </script>
-        <div id="messages">
-          <input type="text" id="roomid"/>
-          <button onclick="setRoomId()" id="roomIdButton">连接</button>
+        <div class="window">
+          <div class="window-content">
+            <div class="pane-group">
+              <div class="pane" id="pane">
+                <from>
+                  <div class="form-group">
+                    <h5>请输入房间号</h5>
+                    <input type="text" class="form-control" placeholder="房间号" id="roomid" maxlength="10">
+                    <button onclick="setRoomId()" class="btn btn-primary btn-large">连接</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          <footer class="toolbar toolbar-footer">
+            <h1 class="title"><a id="github"><span class="icon icon-github"></span></a></h1>
+          </footer>
         </div>
     </body>
 </html>
