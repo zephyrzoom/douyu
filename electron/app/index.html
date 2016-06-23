@@ -88,6 +88,11 @@
           // 滚动条始终在最下面
           var pane = document.getElementById('pane');
           pane.scrollTop = pane.scrollHeight;
+
+          // notification
+          let notifier = new Notification(nn, {
+            body: txt
+          });
         }
 
         // 设置房间号
