@@ -10,7 +10,7 @@ function createWindow() {
         width: 400,
         height: 200,
         autoHideMenuBar: true,
-        icon: __dirname + '/../assets/favicon.ico'
+        icon: __dirname + '/assets/favicon.ico'
     });
     mainWindow.loadURL(`file://${__dirname}/index.html`);
     mainWindow.on('closed', () => {
