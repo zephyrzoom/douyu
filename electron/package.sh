@@ -20,6 +20,11 @@ case $1 in
     ;;
 
     '-p' )
+        if [ $# -ne 2 ]; then
+            echo $2
+            sh package.sh --help
+            return
+        fi
         cd app && npm i && cd ..
         case $2 in
             w32 )
