@@ -1,6 +1,8 @@
 var http = require('http');
 var net = require('net');
 
+const ROOM_ID = '229457';
+
 var s = net.connect({
   port:8601,
   host:'openbarrage.douyutv.com'
@@ -8,12 +10,12 @@ var s = net.connect({
   console.log('connect success');
 });
 
-var msg = 'type@=loginreq/roomid@=518340/';
+var msg = 'type@=loginreq/roomid@=' + ROOM_ID + '/';
 sendData(s, msg);
 
 s.on('data', function(chunk) {
   formatData(chunk);
-  var msg = 'type@=joingroup/rid@=518340/gid@=-9999/';
+  var msg = 'type@=joingroup/rid@=' + ROOM_ID + '/gid@=-9999/';
   sendData(s, msg);
 });
 

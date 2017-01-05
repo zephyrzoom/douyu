@@ -25,7 +25,8 @@ case $1 in
             sh package.sh --help
             return
         fi
-        cd app && npm i && cd ..
+        ELECTRON_MIRROR=https://npm.taobao.org/mirrors/electron/ npm i -g electron electron-packager --registry=https://registry.npm.taobao.org
+        cd app && npm i --registry=https://registry.npm.taobao.org && cd ..
         case $2 in
             w32 )
                 electron-packager app $appName --platform=win32 --arch=ia32
