@@ -1,3 +1,4 @@
 /node_modules
 /electron/app/node_modules
 /electron/707danmu*
+/electron/app/package-lock.json
