@@ -6,7 +6,8 @@
 
 *由于没有Mac，并没有测试Mac版本的，如果谁测试了，希望能在[issue](https://github.com/zephyrzoom/douyu/issues/new)中告诉我。*
 
-自己构建方法：在electron文件夹中有个package.sh的脚本，cd进去执行即可。
+自己构建方法：在electron文件夹中有个package.sh的脚本，cd进去执行即可，
+构建时需要确保已经安装了npm。
 
 ## nodejs版本
 运行`node app.js`
