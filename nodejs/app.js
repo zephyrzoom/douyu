@@ -1,32 +1,32 @@
-var http = require('http');
-var net = require('net');
+const net = require('net');
 
 const ROOM_ID = '229457';
 
-var s = net.connect({
-  port:8601,
-  host:'openbarrage.douyutv.com'
-}, function() {
+const s = net.connect({ port:8601, host:'openbarrage.douyutv.com' }, () => {
   console.log('connect success');
 });
 
-var msg = 'type@=loginreq/roomid@=' + ROOM_ID + '/';
+const msg = 'type@=loginreq/roomid@=' + ROOM_ID + '/';
 sendData(s, msg);
 
-s.on('data', function(chunk) {
+s.on('data', (chunk) => {
   formatData(chunk);
-  var msg = 'type@=joingroup/rid@=' + ROOM_ID + '/gid@=-9999/';
+  const msg = 'type@=joingroup/rid@=' + ROOM_ID + '/gid@=-9999/';
   sendData(s, msg);
 });
 
-setInterval(function() {
-  var timestamp = parseInt(new Date()/1000);
-  var msg = 'type@=keeplive/tick@=' + timestamp + '/';
+s.on('error', (err) => {
+  console.log(err);
+});
+
+setInterval(() => {
+  const timestamp = parseInt(new Date()/1000);
+  const msg = 'type@=keeplive/tick@=' + timestamp + '/';
   sendData(s, msg);
 }, 45000);
 
 function sendData(s, msg) {
-  var data = new Buffer(msg.length + 13);
+  let data = new Buffer(msg.length + 13);
   data.writeInt32LE(msg.length + 9, 0);
   data.writeInt32LE(msg.length + 9, 4);
   data.writeInt32LE(689, 8);
@@ -35,16 +35,17 @@ function sendData(s, msg) {
 }
 
 function formatData(msg) {
-  var sliced = msg.slice(12).toString();
-  var splited = sliced.substring(0, sliced.length - 2).split('/');
-  var map = formatDanmu(splited);
+  const sliced = msg.slice(12).toString();
+  // 减二删掉最后的'/'和'\0'
+  const splited = sliced.substring(0, sliced.length - 2).split('/');
+  const map = formatDanmu(splited);
   analyseDanmu(map);
 }
 
 function formatDanmu(msg) {
-  var map = {};
-  for (var i in msg) {
-    var splited = msg[i].split('@=');
+  let map = {};
+  for (let i in msg) {
+    let splited = msg[i].split('@=');
     map[splited[0]] = splited[1];
   }
   return map;
@@ -53,5 +54,11 @@ function formatDanmu(msg) {
 function analyseDanmu(msg) {
   if (msg['type'] == 'chatmsg') {
     console.log(msg['nn'] + ':' + msg['txt']);
+  }
+  if (msg['type'] == 'uenter') {
+    console.log('<=========[' + msg['nn'] + ']来了=========>');
+  }
+  if (msg['type'] == 'dgb') {
+    console.log('<$$$$$$$$$[' + msg['nn'] + ']送礼物了$$$$$$$$$>');
   }
 }
