@@ -1,29 +1,41 @@
 const net = require('net');
+const readline = require('readline');
 
-const ROOM_ID = '229457';
-
-const s = net.connect({ port:8601, host:'openbarrage.douyutv.com' }, () => {
-  console.log('connect success');
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
 });
 
-const msg = 'type@=loginreq/roomid@=' + ROOM_ID + '/';
-sendData(s, msg);
+let roomid;
+rl.question('输入房间号', (answer) => {
+  roomid = answer;
+  rl.close();
 
-s.on('data', (chunk) => {
-  formatData(chunk);
-  const msg = 'type@=joingroup/rid@=' + ROOM_ID + '/gid@=-9999/';
+  const s = net.connect({ port:8601, host:'openbarrage.douyutv.com' }, () => {
+    console.log('connect success');
+  });
+
+  const msg = 'type@=loginreq/roomid@=' + roomid + '/';
   sendData(s, msg);
+
+  s.on('data', (chunk) => {
+    formatData(chunk);
+    const msg = 'type@=joingroup/rid@=' + roomid + '/gid@=-9999/';
+    sendData(s, msg);
+  });
+
+  s.on('error', (err) => {
+    console.log(err);
+  });
+
+  setInterval(() => {
+    let timestamp = parseInt(new Date()/1000);
+    let msg = 'type@=keeplive/tick@=' + timestamp + '/';
+    sendData(s, msg);
+  }, 45000);
 });
 
-s.on('error', (err) => {
-  console.log(err);
-});
 
-setInterval(() => {
-  const timestamp = parseInt(new Date()/1000);
-  const msg = 'type@=keeplive/tick@=' + timestamp + '/';
-  sendData(s, msg);
-}, 45000);
 
 function sendData(s, msg) {
   let data = new Buffer(msg.length + 13);

@@ -7,7 +7,7 @@
         <!-- Stylesheets -->
         <link rel="stylesheet" href="css/photon.min.css">
         <!-- Jquery -->
-        <script>window.$ = window.jQuery = require('js/jquery.js')</script>
+        <script>window.$ = require('./js/jquery.js')</script>
 
     </head>
     <body>
@@ -15,32 +15,33 @@
         /*
          * 弹幕程序
          */
-        var http = require('http');
-        var net = require('net');
+        const net = require('net');
 
         function start(roomid) {
           // 建立socket连接
-          var s = net.connect({
-            port:8601,
-            host:'openbarrage.douyutv.com'
-          }, function() {
+          const s = net.connect({ port:8601, host:'openbarrage.douyutv.com' }, () => {
             console.log('connect success');
           });
 
-          var msg = 'type@=loginreq/roomid@=' + roomid + '/';
+          const msg = 'type@=loginreq/roomid@=' + roomid + '/';
           sendData(s, msg);
 
           // 接收数据
-          s.on('data', function(chunk) {
+          s.on('data', (chunk) => {
             formatData(chunk);
-            var msg = 'type@=joingroup/rid@=' + roomid + '/gid@=-9999/';
+            const msg = 'type@=joingroup/rid@=' + roomid + '/gid@=-9999/';
             sendData(s, msg);
           });
 
+          // 报错信息
+          s.on('error', (err) => {
+            console.log(err);
+          });
+
           // 设置心跳
-          setInterval(function() {
-            var timestamp = parseInt(new Date()/1000);
-            var msg = 'type@=keeplive/tick@=' + timestamp + '/';
+          setInterval(() => {
+            let timestamp = parseInt(new Date()/1000);
+            let msg = 'type@=keeplive/tick@=' + timestamp + '/';
             sendData(s, msg);
           }, 45000);
 
@@ -48,7 +49,7 @@
 
         // 给弹幕服务器发送消息
         function sendData(s, msg) {
-          var data = new Buffer(msg.length + 13);
+          let data = new Buffer(msg.length + 13);
           data.writeInt32LE(msg.length + 9, 0);
           data.writeInt32LE(msg.length + 9, 4);
           data.writeInt32LE(689, 8);
@@ -58,17 +59,18 @@
 
         // 格式化数据
         function formatData(msg) {
-          var sliced = msg.slice(12).toString();
-          var splited = sliced.substring(0, sliced.length - 2).split('/');
-          var map = formatDanmu(splited);
+          const sliced = msg.slice(12).toString();
+          // 减二删掉最后的'/'和'\0'
+          const splited = sliced.substring(0, sliced.length - 2).split('/');
+          const map = formatDanmu(splited);
           analyseDanmu(map);
         }
 
         // 格式化收到的弹幕，存入map
         function formatDanmu(msg) {
-          var map = {};
-          for (var i in msg) {
-            var splited = msg[i].split('@=');
+          let map = {};
+          for (let i in msg) {
+            let splited = msg[i].split('@=');
             map[splited[0]] = splited[1];
           }
           return map;
@@ -78,6 +80,17 @@
         function analyseDanmu(msg) {
           if (msg['type'] == 'chatmsg') {
             updateMsg(msg['nn'], msg['txt']);
+          }
+        }
+        function analyseDanmu(msg) {
+          if (msg['type'] == 'chatmsg') {
+            updateMsg(msg['nn'], msg['txt']);
+          }
+          if (msg['type'] == 'uenter') {
+            updateMsg('[' + msg['nn'] + ']', '进入房间');
+          }
+          if (msg['type'] == 'dgb') {
+            updateMsg('[' + msg['nn'] + ']', '送礼物啦');
           }
         }
 
