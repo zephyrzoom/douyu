@@ -15,13 +15,13 @@ rl.question('输入房间号', (answer) => {
     console.log('connect success');
   });
 
-  const msg = 'type@=loginreq/roomid@=' + roomid + '/';
+  var msg = 'type@=loginreq/roomid@=' + roomid + '/';
+  sendData(s, msg);
+  msg = 'type@=joingroup/rid@=' + roomid + '/gid@=-9999/';
   sendData(s, msg);
 
   s.on('data', (chunk) => {
     formatData(chunk);
-    const msg = 'type@=joingroup/rid@=' + roomid + '/gid@=-9999/';
-    sendData(s, msg);
   });
 
   s.on('error', (err) => {
